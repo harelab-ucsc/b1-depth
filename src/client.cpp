@@ -10,6 +10,8 @@
 
 #include "msg_helpers.h"
 
+#define DISPLAY_IMAGE true
+
 DepthFrame deserialize(const uint8_t* data, size_t length) {
     // Ensure the byte array is the correct size
     if (length != sizeof(DepthFrame)) {
@@ -57,7 +59,7 @@ int main (int argc, char *argv[])
     subscriber.set(zmq::sockopt::subscribe, "");
 
     // setup image window
-    cv::namedWindow("False Color Depth Image", cv::WINDOW_AUTOSIZE);
+    if (DISPLAY_IMAGE) cv::namedWindow("False Color Depth Image", cv::WINDOW_AUTOSIZE);
 
     const int num_frames = 100;
     std::vector<uint64_t> ts_data(num_frames);
@@ -68,18 +70,24 @@ int main (int argc, char *argv[])
 
         DepthFrame o = deserialize(message.data<uint8_t>(), message.size());
 
-        ts_data[frame_idx] = timeSinceEpochMillisec() - o.timestamp;
+        ts_data[frame_idx] = timeMillisec() - o.timestamp;
 
-        printf("%lu,     %lu\n", timeSinceEpochMillisec() - o.timestamp,  o.timestamp);
+        printf("%u,     %u\n", timeMillisec() - o.timestamp,  o.timestamp);
 
-        displayFalseColorArray(&o.depths[0][0], o.width, o.height, "False Color Depth Image");
+        if (DISPLAY_IMAGE) {
+            displayFalseColorArray(&o.depths[0][0], o.width, o.height, "False Color Depth Image");
 
-        // Wait 30 ms for a key press
-        char key = (char)cv::waitKey(30); 
-        if (key == 27 || key == 'q') { // 27 is the ASCII code for Esc key
-            break;
+            // Wait 30 ms for a key press
+            char key = (char)cv::waitKey(30); 
+            if (key == 27 || key == 'q') { // 27 is the ASCII code for Esc key
+                break;
+            }
         }
     }
+
+    
+    // Close the window
+    if (DISPLAY_IMAGE) cv::destroyAllWindows();
 
     
     // Number of buckets
@@ -110,9 +118,6 @@ int main (int argc, char *argv[])
                   << std::setw(8) << std::setfill(' ') << rangeEnd << "] : ";
         std::cout << std::string(buckets[i] / 10, '*') << " (" << buckets[i] << ")\n";
     }
-
-    // Close the window
-    cv::destroyAllWindows();
 
     return 0;
 }

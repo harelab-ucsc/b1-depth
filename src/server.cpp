@@ -20,14 +20,12 @@ int main () {
     zmq::socket_t publisher (context, zmq::socket_type::pub);
     publisher.bind("tcp://*:5556");
 
-    int offset = 0;
+    int offset = 0; // for sample data
 
     while (1) {
         DepthFrame data;
+        data.timestamp = timeMillisec();
 
-        data.timestamp = timeSinceEpochMillisec();
-
-        printf("%lu\n", timeSinceEpochMillisec());
 
         // Fill the array with some sample data (e.g., a gradient)
         for (int y = 0; y < data.height; ++y) {
@@ -35,7 +33,6 @@ int main () {
                 data.depths[y][x] = static_cast<float>((x + y + offset) % 100);
             }
         }
-
         offset++;
 
         zmq::message_t message(serialize(data));

@@ -4,15 +4,16 @@
 
 #include <chrono>
 
-inline uint64_t timeSinceEpochMillisec() {
+inline uint32_t timeMillisec() {
     using namespace std::chrono;
-    return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    // cast to uint32 from uint64: top 4 bytes are truncated...
+    return static_cast<uint32_t>(duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count());
 }
 
 struct DepthFrame {
-    uint64_t timestamp;
-    int height = 100;
-    int width = 400;
+    uint32_t timestamp;
+    uint16_t height = 100;
+    uint16_t width = 400;
     float depths[100][400];
 };
 
