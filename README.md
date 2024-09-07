@@ -13,10 +13,11 @@ On the client, install openCV if you would like there to be display, or do not i
 
 Clone this repo.
 On the client and server, do:
-`cd b1-depth`
-`mkdir build`
-`cd build`
-`cmake ..`
-`make`
+```cd b1-depth
+mkdir build
+cd build
+cmake ..
+make
+```
 Then do `./client` or `./server` respectively.
 
