@@ -38,10 +38,13 @@ int main (int argc, char *argv[])
 {
     zmq::context_t context (1);
 
-    //  Socket to talk to server
-    std::cout << "Start listening on localhost...\n" << std::endl;
+    // Define the IP address and port in separate variables
+    // std::string ipAddress = "192.168.123.23:5556";
+    std::string ipAddress = "localhost:5556";    
+
+    std::cout << "Start listening on " << ipAddress << "...\n" << std::endl;
     zmq::socket_t subscriber (context, zmq::socket_type::sub);
-    subscriber.connect("tcp://192.168.123.23:5556");
+    subscriber.connect("tcp://" + ipAddress);
 
     subscriber.set(zmq::sockopt::subscribe, "");
 
@@ -65,7 +68,7 @@ int main (int argc, char *argv[])
         if (messageData.size() != sizeof(DepthFrameData)) {
             printf("recieved header before image, flushing next message\n");
             subscriber.recv(messageData, zmq::recv_flags::none);
-            break;
+            continue;
         }
 
         DepthFrameData o = deserialize(messageData.data<uint8_t>(), messageData.size());
