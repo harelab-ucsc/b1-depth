@@ -6,6 +6,7 @@
 #include <zmq.hpp>
 #include <iomanip> // For setting width and padding of the output historgram
 #include <algorithm> // For std::max_element
+#include <numeric> // For std::accumulate
 #include <chrono>
 
 #include "msg_helpers.h"
@@ -59,7 +60,7 @@ int main (int argc, char *argv[])
     if (DISPLAY_IMAGE) cv::namedWindow("False Color Depth Image", cv::WINDOW_AUTOSIZE);
 
     const int num_frames = 1000;
-    std::vector<uint64_t> ts_data(num_frames);
+    std::vector<int> ts_data(num_frames);
 
     for (int frame_idx=0; frame_idx < num_frames; frame_idx++) {
         zmq::message_t messageData;
@@ -97,6 +98,10 @@ int main (int argc, char *argv[])
     // Close the window
     if (DISPLAY_IMAGE) cv::destroyAllWindows();
 
+    double sum = std::accumulate(ts_data.begin(), ts_data.end(), 0.0);
+    double average = sum / ts_data.size();
+
+    printf("================\nAverage: %.2f", average);
 
     // Number of buckets
     const int numBuckets = 5;
