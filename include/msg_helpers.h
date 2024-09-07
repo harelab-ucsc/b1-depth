@@ -19,4 +19,29 @@ struct __attribute__((packed)) DepthFrameData {
     uint8_t bytes_per_pixel;
 };
 
+
+std::vector<uint8_t> serialize(const DepthFrameData& data) {
+    // Create a byte vector with enough space
+    std::vector<uint8_t> byteArray(sizeof(DepthFrameData));
+    
+    // Copy data from the struct to the byte array
+    std::memcpy(byteArray.data(), &data, sizeof(DepthFrameData));
+
+    return byteArray;
+}
+
+DepthFrameData deserialize(const uint8_t* data, size_t length) {
+    // Ensure the byte array is the correct size
+    if (length != sizeof(DepthFrameData)) {
+        throw std::runtime_error("Byte array size does not match struct size.");
+    }
+
+    DepthFrameData result;
+    
+    // Copy data from the byte array to the struct
+    std::memcpy(&result, data, sizeof(DepthFrameData));
+    
+    return result;
+}
+
 #endif // MSG_HELPERS_HARE
