@@ -3,12 +3,12 @@
 
 #include "msg_helpers.h"
 
-std::vector<uint8_t> serialize(const DepthFrame& data) {
+std::vector<uint8_t> serialize(const DepthFrameData& data) {
     // Create a byte vector with enough space
-    std::vector<uint8_t> byteArray(sizeof(DepthFrame));
+    std::vector<uint8_t> byteArray(sizeof(DepthFrameData));
     
     // Copy data from the struct to the byte array
-    std::memcpy(byteArray.data(), &data, sizeof(DepthFrame));
+    std::memcpy(byteArray.data(), &data, sizeof(DepthFrameData));
 
     return byteArray;
 }
@@ -23,20 +23,30 @@ int main () {
     int offset = 0; // for sample data
 
     while (1) {
-        DepthFrame data;
+        DepthFrameData data;
         data.timestamp = timeMillisec();
+        data.bytes_per_pixel = 2;
+        data.width = 100;
+        data.height = 100;
+        data.data_size = data.bytes_per_pixel * data.width * data.height;
+        // TODO: test this client example
 
+        uint16_t *ptr = (uint16_t*)malloc(data.data_size);
 
         // Fill the array with some sample data (e.g., a gradient)
         for (int y = 0; y < data.height; ++y) {
             for (int x = 0; x < data.width; ++x) {
-                data.depths[y][x] = static_cast<float>((x + y + offset) % 100);
+                ptr[x+y] = static_cast<uint16_t>((x + y + offset) % 256);
             }
         }
         offset++;
 
-        zmq::message_t message(serialize(data));
-        publisher.send(message, zmq::send_flags::none);
+        zmq::message_t messageD(serialize(data));
+        publisher.send(messageD, zmq::send_flags::none);
+
+
+        zmq::message_t messageI(ptr, data.data_size);
+        publisher.send(messageI, zmq::send_flags::none);
     }
     return 0;
 }

@@ -12,36 +12,33 @@
 
 #define DISPLAY_IMAGE true
 
-DepthFrame deserialize(const uint8_t* data, size_t length) {
+DepthFrameData deserialize(const uint8_t* data, size_t length) {
     // Ensure the byte array is the correct size
-    if (length != sizeof(DepthFrame)) {
+    if (length != sizeof(DepthFrameData)) {
         throw std::runtime_error("Byte array size does not match struct size.");
     }
 
-    DepthFrame result;
+    DepthFrameData result;
     
     // Copy data from the byte array to the struct
-    std::memcpy(&result, data, sizeof(DepthFrame));
+    std::memcpy(&result, data, sizeof(DepthFrameData));
     
     return result;
 }
 
-void displayFalseColorArray(const float* array, int width, int height, const std::string& windowName) {
-    
-    // Convert float data to 8-bit unsigned integers
-    cv::Mat floatMat(height, width, CV_32FC1, const_cast<float*>(array)); // Original float data
-    cv::Mat grayMat(height, width, CV_8UC1); // Destination for 8-bit grayscale image
+void displayFalseColorArray(const uint16_t* array, int width, int height, const std::string& windowName) {
+    // Convert uint16_t array to cv::Mat
+    cv::Mat grayMat(height, width, CV_16UC1, const_cast<uint16_t*>(array));
 
-    // Find min and max values in the float array
+    // Normalize the grayMat to range [0, 255] for color mapping
+    cv::Mat normalizedMat;
     double minVal, maxVal;
-    cv::minMaxLoc(floatMat, &minVal, &maxVal);
-
-    // Normalize the float data to [0, 255] range and convert to 8-bit
-    floatMat.convertTo(grayMat, CV_8UC1, 255.0 / (maxVal - minVal), -minVal * 255.0 / (maxVal - minVal));
+    cv::minMaxLoc(grayMat, &minVal, &maxVal);
+    grayMat.convertTo(normalizedMat, CV_8UC1, 255.0 / (maxVal - minVal), -minVal * 255.0 / (maxVal - minVal));
 
     // Apply a colormap
     cv::Mat colorMat;
-    cv::applyColorMap(grayMat, colorMat, cv::COLORMAP_JET); // Use the JET colormap
+    cv::applyColorMap(normalizedMat, colorMat, cv::COLORMAP_VIRIDIS); // Use the JET colormap
 
     // Display the color-mapped image
     cv::imshow(windowName, colorMat);
@@ -54,28 +51,39 @@ int main (int argc, char *argv[])
     //  Socket to talk to server
     std::cout << "Start listening on localhost...\n" << std::endl;
     zmq::socket_t subscriber (context, zmq::socket_type::sub);
-    subscriber.connect("tcp://localhost:5556");
+    subscriber.connect("tcp://192.168.123.23:5556");
 
     subscriber.set(zmq::sockopt::subscribe, "");
 
     // setup image window
     if (DISPLAY_IMAGE) cv::namedWindow("False Color Depth Image", cv::WINDOW_AUTOSIZE);
 
-    const int num_frames = 100;
+    const int num_frames = 1000;
     std::vector<uint64_t> ts_data(num_frames);
 
     for (int frame_idx=0; frame_idx < num_frames; frame_idx++) {
-        zmq::message_t message;
-        subscriber.recv(message, zmq::recv_flags::none);
+        zmq::message_t messageData;
+        subscriber.recv(messageData, zmq::recv_flags::none);
 
-        DepthFrame o = deserialize(message.data<uint8_t>(), message.size());
+        if (messageData.size() != sizeof(DepthFrameData)) {
+            printf("recieved header before image, flushing next message\n");
+            subscriber.recv(messageData, zmq::recv_flags::none);
+            break;
+        }
 
-        ts_data[frame_idx] = timeMillisec() - o.timestamp;
+        DepthFrameData o = deserialize(messageData.data<uint8_t>(), messageData.size());
 
-        printf("%u,     %u\n", timeMillisec() - o.timestamp,  o.timestamp);
+        zmq::message_t messageImage;
+        subscriber.recv(messageImage, zmq::recv_flags::none);
+
+        printf("ts: %u, our_ts: %u, data size: %u, units: %f, w: %u, h: %u, bpp: %u, \n", o.timestamp, timeMillisec(), o.data_size, o.unitsTimesThousand / 1000.0, o.width, o.height, o.bytes_per_pixel);
+
+        // printf("pixels calc: %u , pixels reciev: %u\n\n", o.width * o.height, o.data_size / o.bytes_per_pixel);
+
+        // printf("their: %u, our_ms: %f\n", o.timestamp, std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() - 1725697800000.0  );
 
         if (DISPLAY_IMAGE) {
-            displayFalseColorArray(&o.depths[0][0], o.width, o.height, "False Color Depth Image");
+            displayFalseColorArray(messageImage.data<uint16_t>(), o.width, o.height, "False Color Depth Image");
 
             // Wait 30 ms for a key press
             char key = (char)cv::waitKey(30); 
@@ -89,7 +97,7 @@ int main (int argc, char *argv[])
     // Close the window
     if (DISPLAY_IMAGE) cv::destroyAllWindows();
 
-    
+
     // Number of buckets
     const int numBuckets = 5;
 
