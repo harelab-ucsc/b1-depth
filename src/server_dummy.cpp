@@ -6,7 +6,7 @@
 int main () {
 
     //  Prepare our context and publisher
-    zmq::context_t context (1);
+    zmq::context_t context;
     zmq::socket_t publisher (context, zmq::socket_type::pub);
     publisher.bind("tcp://*:5556");
 

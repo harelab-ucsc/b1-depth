@@ -36,14 +36,14 @@ void displayFalseColorArray(const uint16_t* array, int width, int height, const 
 
 int main (int argc, char *argv[])
 {
-    zmq::context_t context (1);
+    zmq::context_t ctx;
 
     // Define the IP address and port in separate variables
     // std::string ipAddress = "192.168.123.23:5556";
     std::string ipAddress = "localhost:5556";    
 
     std::cout << "Start listening on " << ipAddress << "...\n" << std::endl;
-    zmq::socket_t subscriber (context, zmq::socket_type::sub);
+    zmq::socket_t subscriber (ctx, zmq::socket_type::sub);
     subscriber.connect("tcp://" + ipAddress);
 
     subscriber.set(zmq::sockopt::subscribe, "");
