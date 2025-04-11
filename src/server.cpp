@@ -66,7 +66,7 @@ int main(int argc, char * argv[]) try
         data.height = height;
         data.bytes_per_pixel = bytes_per_pixel;
 
-        zmq::message_t messageData(serialize_depthframe(data));
+        zmq::message_t messageData(serialize(data));
         zmq::message_t messageImage(depth.get_data(), depth.get_data_size());
 
         publisher.send(messageData, zmq::send_flags::sndmore);
