@@ -39,8 +39,8 @@ int main (int argc, char *argv[])
     zmq::context_t ctx;
 
     // Define the IP address and port in separate variables
-    // std::string ipAddress = "192.168.123.23:5556";
-    std::string ipAddress = "localhost:5556";    
+    std::string ipAddress = "192.168.123.23:5556";
+    // std::string ipAddress = "localhost:5556";    
 
     std::cout << "Start listening on " << ipAddress << "...\n" << std::endl;
     zmq::socket_t subscriber (ctx, zmq::socket_type::sub);
@@ -50,6 +50,7 @@ int main (int argc, char *argv[])
 
     // setup image window
     #ifdef HAS_OPENCV
+    std::cout << "Starting OpenCV Display..." << std::endl;
     cv::namedWindow("False Color Depth Image", cv::WINDOW_AUTOSIZE);
     #endif
 
