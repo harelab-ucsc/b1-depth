@@ -12,7 +12,7 @@ int main(int argc, char * argv[]) try
 
     rs2::context ctx;
     // create realsense pipelines (multiple cameras = multiple pipelines)
-    std::vector<rs2::pipeline>
+    std::vector<rs2::pipeline> pipelines;
 
     // Start a streaming pipe per each connected device
     // https://dev.intelrealsense.com/docs/rs-multicam
