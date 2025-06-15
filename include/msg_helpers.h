@@ -2,44 +2,32 @@
 #ifndef MSG_HELPERS_HARE
 #define MSG_HELPERS_HARE
 
-#include <chrono>
-
-inline uint32_t timeMillisec() {
-    using namespace std::chrono;
-    // cast to uint32 from uint64: top 4 bytes are truncated...
-    return static_cast<uint32_t>(duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count() - 1725697800000);
-}
-
-struct __attribute__((packed)) DepthFrameData {
-    uint32_t timestamp;
-    uint32_t data_size;
-    uint16_t unitsTimesThousand;
-    uint16_t width;
-    uint16_t height;
-    uint8_t bytes_per_pixel;
+struct __attribute__((packed)) PointCloudInfo {
+    double timestamp;
+    uint8_t index;
 };
 
 
-std::vector<uint8_t> serialize(const DepthFrameData& data) {
+std::vector<uint8_t> serialize(const PointCloudInfo& data) {
     // Create a byte vector with enough space
-    std::vector<uint8_t> byteArray(sizeof(DepthFrameData));
+    std::vector<uint8_t> byteArray(sizeof(PointCloudInfo));
     
     // Copy data from the struct to the byte array
-    std::memcpy(byteArray.data(), &data, sizeof(DepthFrameData));
+    std::memcpy(byteArray.data(), &data, sizeof(PointCloudInfo));
 
     return byteArray;
 }
 
-DepthFrameData deserialize(const uint8_t* data, size_t length) {
+PointCloudInfo deserialize(const uint8_t* data, size_t length) {
     // Ensure the byte array is the correct size
-    if (length != sizeof(DepthFrameData)) {
+    if (length != sizeof(PointCloudInfo)) {
         throw std::runtime_error("Byte array size does not match struct size.");
     }
 
-    DepthFrameData result;
+    PointCloudInfo result;
     
     // Copy data from the byte array to the struct
-    std::memcpy(&result, data, sizeof(DepthFrameData));
+    std::memcpy(&result, data, sizeof(PointCloudInfo));
     
     return result;
 }

@@ -50,9 +50,9 @@ int main(int argc, char * argv[]) try
                 // get pointcloud
                 points = pc.calculate(depth);
 
-                zmq::message_t messagePoints1(points.get_data(), points.get_data_size());
+                zmq::message_t messagePoints(points.get_data(), points.get_data_size());
 
-                publisher.send(messagePoints1, i != pipelines.size()-1 ? zmq::send_flags::sndmore : zmq::send_flags::none);
+                publisher.send(messagePoints, i != pipelines.size()-1 ? zmq::send_flags::sndmore : zmq::send_flags::none);
             }
         }
     }
