@@ -25,7 +25,7 @@ int main(int argc, char * argv[]) try
         cfg.enable_device(dev.get_info(RS2_CAMERA_INFO_SERIAL_NUMBER));
         pipe.start(cfg);
         pipelines.emplace_back(pipe);
-        std::cout << "Enabling device: " << dev.get_info(RS2_CAMERA_INFO_NAME) << std::endl;
+        std::cout << "Enabling device: " << dev.get_info(RS2_CAMERA_INFO_NAME) << " serial no: " << dev.get_info(RS2_CAMERA_INFO_SERIAL_NUMBER) << std::endl;
     }
 
 
