@@ -56,7 +56,8 @@ int main(int argc, char * argv[]) try
                 info.index = i;
 
                 zmq::message_t messageInfo(serialize(info));
-                zmq::message_t messagePoints(points.get_data(), points.get_data_size());
+                // there are 3 floats (x y z) per point, so 3*size_of_float*num_points
+                zmq::message_t messagePoints(points.get_data(), 3*points.size()*sizeof(float));
 
                 publisher.send(messageInfo, zmq::send_flags::sndmore);
                 publisher.send(messagePoints, zmq::send_flags::none);
