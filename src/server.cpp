@@ -23,6 +23,7 @@ int main(int argc, char * argv[]) try
         rs2::pipeline pipe(ctx);
         rs2::config cfg;
         cfg.enable_device(dev.get_info(RS2_CAMERA_INFO_SERIAL_NUMBER));
+        cfg.enable_stream(RS2_STREAM_DEPTH);
         pipe.start(cfg);
         pipelines.emplace_back(pipe);
         std::cout << "Enabling device: " << dev.get_info(RS2_CAMERA_INFO_NAME) << " serial no: " << dev.get_info(RS2_CAMERA_INFO_SERIAL_NUMBER) << std::endl;
