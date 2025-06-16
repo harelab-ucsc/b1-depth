@@ -59,7 +59,7 @@ int main(int argc, char * argv[]) try
 
                 PointCloudInfo info;
                 info.timestamp = depth.get_timestamp();
-                info.index = device_index + 2*i;
+                info.index = 2*device_index + i;
 
                 zmq::message_t messageInfo(serialize(info));
                 // there are 3 floats (x y z) per point, so 3*size_of_float*num_points
