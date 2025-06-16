@@ -9,6 +9,12 @@
 
 int main(int argc, char * argv[]) try
 {
+    uint8_t device_index = 0;
+    if (argc > 1) {
+        if (argv[1][0] >= '1' && argv[1][0] <= '9') {
+            device_index = argv[1][0] - '0';
+        }
+    }
 
     rs2::context ctx;
     // create realsense pipelines (multiple cameras = multiple pipelines)
@@ -53,7 +59,7 @@ int main(int argc, char * argv[]) try
 
                 PointCloudInfo info;
                 info.timestamp = depth.get_timestamp();
-                info.index = i;
+                info.index = device_index + 2*i;
 
                 zmq::message_t messageInfo(serialize(info));
                 // there are 3 floats (x y z) per point, so 3*size_of_float*num_points
