@@ -7,17 +7,18 @@ Gets depth images from the Unitree B1's cameras and sends them to your computer 
 Install cppzmq (and libzmq) as in [the readme of the cppzmq repo](https://github.com/zeromq/cppzmq).
 Due to the B1 having older firmware, the nvidia computers may have to build cppzmq without tests.
 
-Install librealsense, or if you just want to run a test without realsense, do not install/set HAS_REALSENSE to false. In that case dummy data will be sent.
+Install librealsense as well.
 
-On the client, install openCV if you would like there to be display, or do not install on the headless computers.
+On the client, please use the repo [b1-depth client](https://github.com/harelab-ucsc/b1-depth-client) in a ros catkin workspace to read the points and publish them.
 
+To use this repo,
 Clone this repo.
-On the client and server, do:
+On the b1 (server), do:
 ```cd b1-depth
 mkdir build
 cd build
 cmake ..
 make
 ```
-Then do `./client` or `./server` respectively.
+Then run  `./server` .
 
